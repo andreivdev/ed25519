@@ -38,8 +38,10 @@ FOUNDATION_EXPORT NSData* _Nullable Ed25519ExtractPublicKey(NSData* _Nullable me
 // skipped function GenerateKey with unsupported parameter or return types
 
 
-// skipped function NewDerivedKeyFromSeed with unsupported parameter or return types
-
+/**
+ * NewDerivedKeyFromSeed calculates a private key from a 32 bytes random seed, an integer index and salt
+ */
+FOUNDATION_EXPORT NSData* _Nullable Ed25519NewDerivedKeyFromSeed(NSData* _Nullable seed, NSData* _Nullable index, NSData* _Nullable salt);
 
 /**
  * NewKeyFromSeed calculates a private key from a seed. It will panic if

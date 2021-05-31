@@ -93,7 +93,7 @@ func ExtractPublicKey(message, sig []byte) ([]byte) {
 }
 
 // NewDerivedKeyFromSeed calculates a private key from a 32 bytes random seed, an integer index and salt
-func NewDerivedKeyFromSeed(seed []byte, index uint64, salt []byte) []byte {
+func NewDerivedKeyFromSeed(seed []byte, index []byte, salt []byte) []byte {
 
 	if l := len(seed); l != SeedSize {
 		panic("ed25519: bad seed length: " + strconv.Itoa(l))
@@ -103,7 +103,8 @@ func NewDerivedKeyFromSeed(seed []byte, index uint64, salt []byte) []byte {
 	digest.Write(seed)
 	digest.Write(salt)
 	buf := make([]byte, 8)
-	binary.LittleEndian.PutUint64(buf, index)
+	num := binary.LittleEndian.Uint64(index)
+	binary.LittleEndian.PutUint64(buf, num)
 	digest.Write(buf)
 
 	return NewKeyFromSeed(digest.Sum(nil)[:SeedSize])
