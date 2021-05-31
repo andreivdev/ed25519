@@ -7,18 +7,18 @@ import (
 	"bytes"
 	"crypto/sha512"
 	"encoding/binary"
-	"errors"
-	"github.com/spacemeshos/ed25519/internal/edwards25519"
 	"strconv"
+
+	"github.com/spacemeshos/ed25519/internal/edwards25519"
 )
 
 // ExtractPublicKey extracts the signer's public key given a message and its signature.
 // Note that signature must be created using Sign2() and NOT using Sign().
 // It will panic if len(sig) is not SignatureSize.
-func ExtractPublicKey(message, sig []byte) (PublicKey, error) {
+func ExtractPublicKey(message, sig []byte) ([]byte) {
 
 	if l := len(sig); l != SignatureSize || sig[63]&224 != 0 {
-		return nil, errors.New("ed25519: bad signature format")
+		return nil
 	}
 
 	h := sha512.New()
@@ -37,13 +37,13 @@ func ExtractPublicKey(message, sig []byte) (PublicKey, error) {
 
 	var s [32]byte
 	if l := copy(s[:], sig[32:]); l != PublicKeySize {
-		return nil, errors.New("memory copy failed")
+		return nil
 	}
 
 	// https://tools.ietf.org/html/rfc8032#section-5.1.7 requires that s be in
 	// the range [0, order) in order to prevent signature malleability.
 	if !edwards25519.ScMinimal(&s) {
-		return nil, errors.New("invalid signature")
+		return nil
 	}
 
 	// var zero [32]byte
@@ -55,7 +55,7 @@ func ExtractPublicKey(message, sig []byte) (PublicKey, error) {
 	var r [32]byte
 	copy(r[:], sig[:32])
 	if ok := R.FromBytes(&r); !ok {
-		return nil, errors.New("failed to create extended group element from s")
+		return nil
 	}
 
 	// The following lines make R -> -R
@@ -89,11 +89,12 @@ func ExtractPublicKey(message, sig []byte) (PublicKey, error) {
 
 	// EC_PK is supposed to be the public key as an elliptic curve point, we apply ToBytes
 	EC_PK.ToBytes(&pubKey)
-	return pubKey[:], nil
+	return pubKey[:]
 }
 
 // NewDerivedKeyFromSeed calculates a private key from a 32 bytes random seed, an integer index and salt
-func NewDerivedKeyFromSeed(seed []byte, index uint64, salt []byte) PrivateKey {
+func NewDerivedKeyFromSeed(seed []byte, index uint64, salt []byte) []byte {
+
 	if l := len(seed); l != SeedSize {
 		panic("ed25519: bad seed length: " + strconv.Itoa(l))
 	}
@@ -113,7 +114,7 @@ func NewDerivedKeyFromSeed(seed []byte, index uint64, salt []byte) PrivateKey {
 // The signature returned by this method can be used together with the message
 // to extract the public key using ExtractPublicKey()
 // It will panic if len(privateKey) is not PrivateKeySize.
-func Sign2(privateKey PrivateKey, message []byte) []byte {
+func Sign2(privateKey []byte, message []byte) []byte {
 
 	// COMMENTS in the code refer to Algorithm 1 in https://eprint.iacr.org/2017/985.pdf
 
@@ -185,7 +186,7 @@ func Sign2(privateKey PrivateKey, message []byte) []byte {
 
 // Verify2 verifies a signature created with Sign2(),
 // assuming the verifier possesses the public key.
-func Verify2(publicKey PublicKey, message, sig []byte) bool {
+func Verify2(publicKey []byte, message, sig []byte) bool {
 	if l := len(publicKey); l != PublicKeySize {
 		panic("ed25519: bad public key length: " + strconv.Itoa(l))
 	}

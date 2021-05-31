@@ -21,9 +21,10 @@ import (
 	cryptorand "crypto/rand"
 	"crypto/sha512"
 	"errors"
-	"github.com/spacemeshos/ed25519/internal/edwards25519"
 	"io"
 	"strconv"
+
+	"github.com/spacemeshos/ed25519/internal/edwards25519"
 )
 
 const (
@@ -95,7 +96,7 @@ func GenerateKey(rand io.Reader) (PublicKey, PrivateKey, error) {
 // len(seed) is not SeedSize. This function is provided for interoperability
 // with RFC 8032. RFC 8032's private keys correspond to seeds in this
 // package.
-func NewKeyFromSeed(seed []byte) PrivateKey {
+func NewKeyFromSeed(seed []byte) []byte {
 	if l := len(seed); l != SeedSize {
 		panic("ed25519: bad seed length: " + strconv.Itoa(l))
 	}
